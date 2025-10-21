@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.13-blue) ![MySQL](https://img.shields.io/badge/MySQL-8.0-green) ![License](https://img.shields.io/badge/License-MIT-orange)
 
 <div align="center">
-  <img src="assets/banner.png" alt="SoftGraph Banner" width="1000"/>
+  <img src="assets/softgraph_banner.png" alt="SoftGraph Banner" width="1000"/>
 </div>
 
 ---
