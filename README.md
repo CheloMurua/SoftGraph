@@ -1,7 +1,7 @@
 # 🚀 SoftGraph - Gestión de Imprentas
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue) ![MySQL](https://img.shields.io/badge/MySQL-8.0-green) ![License](https://img.shields.io/badge/License-MIT-orange)
-![Banner](SoftGraph/assets/softgraph_banner.png.png)
+![Banner](SoftGraph/assets/softgraph_banner.png)
 ---
 
 ## 📌 Descripción
