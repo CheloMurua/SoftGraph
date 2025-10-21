@@ -1,7 +1,10 @@
+# main.py
+
 from database.database import Database
 from services.cliente_service import ClienteService
 from services.pedido_service import PedidoService
 from services.presupuesto_service import PresupuestoService
+from services.auth_service import AuthService
 from dotenv import load_dotenv
 import os
 
@@ -9,6 +12,7 @@ import os
 load_dotenv()
 
 def main():
+    # Conexión a la base de datos
     db = Database(
         host=os.getenv("DB_HOST"),
         user=os.getenv("DB_USER"),
@@ -17,10 +21,26 @@ def main():
     )
     db.conectar()
 
+    # Inicializar servicios
+    auth_service = AuthService(db)
     cliente_service = ClienteService(db)
     pedido_service = PedidoService(db)
     presupuesto_service = PresupuestoService()
 
+    # --- LOGIN ---
+    print("=== Bienvenido a SoftGraph ===")
+    username = input("Usuario: ")
+    password = input("Contraseña: ")
+
+    exito, usuario = auth_service.login(username, password)
+    if not exito:
+        print("Usuario o contraseña incorrectos. Saliendo...")
+        db.desconectar()
+        exit()
+    else:
+        print(f"¡Bienvenido {usuario['username']}!")
+
+    # --- MENÚ PRINCIPAL ---
     while True:
         print("\n=== Menú SoftGraph ===")
         print("1. Listar clientes")
@@ -98,6 +118,7 @@ def main():
             print("Opción inválida. Intente nuevamente.")
 
     db.desconectar()
+    print("¡Hasta luego!")
 
 
 if __name__ == "__main__":

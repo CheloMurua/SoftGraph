@@ -7,6 +7,13 @@
 CREATE DATABASE IF NOT EXISTS softgraph;
 USE softgraph;
 
+-- 1️⃣ Tabla de usuarios (para autenticación)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
 -- 2️⃣ Tabla de clientes
 CREATE TABLE IF NOT EXISTS clientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,4 +66,8 @@ INSERT INTO pedidos (cliente_id, descripcion, cantidad, precio_unitario) VALUES
 INSERT INTO presupuestos (cliente_id, total, descuento) VALUES
 (1, 1250.00, 0),
 (2, 540.00, 10);
+
+-- Ejemplo de usuario
+INSERT INTO usuarios (username, password) VALUES
+('admin', '1234'); -- en producción, usar hash
 
