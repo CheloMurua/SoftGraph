@@ -1,125 +1,72 @@
-# main.py
+"""
+SoftGraph - Selector de interfaz
+Autor: Grupo 24
+Descripción:
+Permite elegir al inicio si se quiere usar la interfaz clásica o el dashboard moderno.
+"""
 
-from database.database import Database
-from services.cliente_service import ClienteService
-from services.pedido_service import PedidoService
-from services.presupuesto_service import PresupuestoService
-from services.auth_service import AuthService
-from dotenv import load_dotenv
-import os
+import sys
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt
 
-# Cargar variables de entorno
-load_dotenv()
+from gui.softgraph_gui import run_app as run_classic
+from gui.dashboard_gui import run_dashboard
+
+class SelectorGUI(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("SoftGraph - Selección de Interfaz")
+        self.setFixedSize(400, 200)
+        self.setStyleSheet("background-color: #f5f5f5;")
+
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setSpacing(20)
+
+        title = QLabel("Bienvenido a SoftGraph")
+        title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        # Botón interfaz clásica
+        self.btn_clasico = QPushButton("Interfaz Clásica")
+        self.btn_clasico.setFixedHeight(40)
+        self.btn_clasico.setStyleSheet(
+            "background-color: #2196F3; color: white; border-radius: 8px; font-weight: 600;"
+        )
+        self.btn_clasico.clicked.connect(self.lanzar_clasico)
+        layout.addWidget(self.btn_clasico)
+
+        # Botón dashboard moderno
+        self.btn_dashboard = QPushButton("Dashboard Moderno")
+        self.btn_dashboard.setFixedHeight(40)
+        self.btn_dashboard.setStyleSheet(
+            "background-color: #4CAF50; color: white; border-radius: 8px; font-weight: 600;"
+        )
+        self.btn_dashboard.clicked.connect(self.lanzar_dashboard)
+        layout.addWidget(self.btn_dashboard)
+
+        self.setLayout(layout)
+
+    # ---------------- MÉTODOS ----------------
+    def lanzar_clasico(self):
+        self.hide()
+        dialog = run_classic()
+        dialog.finished.connect(self.show)  # volver a mostrar selector al cerrar
+        dialog.exec()
+
+    def lanzar_dashboard(self):
+        self.hide()
+        dialog = run_dashboard()
+        dialog.finished.connect(self.show)  # volver a mostrar selector al cerrar
+        dialog.exec()
 
 def main():
-    # Conexión a la base de datos
-    db = Database(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
-    )
-    db.conectar()
-
-    # Inicializar servicios
-    auth_service = AuthService(db)
-    cliente_service = ClienteService(db)
-    pedido_service = PedidoService(db)
-    presupuesto_service = PresupuestoService()
-
-    # --- LOGIN ---
-    print("=== Bienvenido a SoftGraph ===")
-    username = input("Usuario: ")
-    password = input("Contraseña: ")
-
-    exito, usuario = auth_service.login(username, password)
-    if not exito:
-        print("Usuario o contraseña incorrectos. Saliendo...")
-        db.desconectar()
-        exit()
-    else:
-        print(f"¡Bienvenido {usuario['username']}!")
-
-    # --- MENÚ PRINCIPAL ---
-    while True:
-        print("\n=== Menú SoftGraph ===")
-        print("1. Listar clientes")
-        print("2. Agregar cliente")
-        print("3. Eliminar cliente")
-        print("4. Listar pedidos")
-        print("5. Agregar pedido")
-        print("6. Eliminar pedido")
-        print("7. Generar presupuesto")
-        print("0. Salir")
-        opcion = input("Seleccione una opción: ")
-
-        if opcion == "0":
-            break
-
-        elif opcion == "1":
-            clientes = cliente_service.listar_clientes()
-            if clientes:
-                for c in clientes:
-                    print(c)
-            else:
-                print("No hay clientes registrados.")
-
-        elif opcion == "2":
-            nombre = input("Nombre: ")
-            dni = input("DNI: ")
-            email = input("Email: ")
-            if cliente_service.agregar_cliente(nombre, dni, email):
-                print("Cliente agregado con éxito.")
-
-        elif opcion == "3":
-            dni = input("DNI del cliente a eliminar: ")
-            cliente = cliente_service.cliente_dao.buscar_cliente_por_dni(dni)
-            if cliente:
-                confirm = input(f"Eliminar {cliente.nombre}? (s/n): ")
-                if confirm.lower() == "s":
-                    cliente_service.cliente_dao.eliminar_cliente(cliente.id)
-                    print("Cliente eliminado.")
-            else:
-                print("Cliente no encontrado.")
-
-        elif opcion == "4":
-            pedidos = pedido_service.listar_pedidos()
-            if pedidos:
-                for p in pedidos:
-                    print(p)
-            else:
-                print("No hay pedidos registrados.")
-
-        elif opcion == "5":
-            dni = input("DNI del cliente: ")
-            cliente = cliente_service.cliente_dao.buscar_cliente_por_dni(dni)
-            if not cliente:
-                print("Cliente no encontrado.")
-                continue
-            descripcion = input("Descripción del pedido: ")
-            cantidad = int(input("Cantidad: "))
-            precio_unitario = float(input("Precio unitario: "))
-            pedido_service.agregar_pedido(cliente.id, descripcion, cantidad, precio_unitario)
-
-        elif opcion == "6":
-            pedido_id = int(input("ID del pedido a eliminar: "))
-            pedido_service.pedido_dao.eliminar_pedido(pedido_id)
-            print("Pedido eliminado si existía.")
-
-        elif opcion == "7":
-            pedidos = pedido_service.listar_pedidos()
-            if not pedidos:
-                print("No hay pedidos para generar presupuesto.")
-                continue
-            descuento = float(input("Porcentaje de descuento: "))
-            presupuesto_service.generar_presupuesto(pedidos, descuento)
-
-        else:
-            print("Opción inválida. Intente nuevamente.")
-
-    db.desconectar()
-    print("¡Hasta luego!")
-
+    app = QApplication(sys.argv)
+    selector = SelectorGUI()
+    selector.show()
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
