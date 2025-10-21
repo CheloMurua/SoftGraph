@@ -1,123 +1,112 @@
-"""
-SoftGraph - Interfaz gráfica moderna con PyQt6
-Incluye login y dashboard conectado a la base de datos.
-"""
-
+# gui/dashboard_gui.py
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QLabel, QLineEdit, QPushButton,
-    QVBoxLayout, QHBoxLayout, QMessageBox, QTableWidget, QTableWidgetItem
+    QWidget, QVBoxLayout, QLabel, QPushButton,
+    QLineEdit, QHBoxLayout, QMessageBox, QTableWidget, QTableWidgetItem
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
+from datetime import datetime
 
-
-# ==============================
-# Ventana de Login
-# ==============================
 class LoginWindow(QWidget):
     def __init__(self, auth_service, cliente_service, pedido_service):
         super().__init__()
         self.auth_service = auth_service
         self.cliente_service = cliente_service
         self.pedido_service = pedido_service
-        self.init_ui()
 
-    def init_ui(self):
         self.setWindowTitle("SoftGraph - Login")
-        self.setGeometry(500, 300, 350, 250)
-
-        titulo = QLabel("Iniciar sesión")
-        titulo.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Usuario")
-
-        self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Contraseña")
-        self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-
-        btn_login = QPushButton("Ingresar")
-        btn_login.clicked.connect(self.verificar_login)
-
+        self.setFixedSize(350, 200)
         layout = QVBoxLayout()
-        layout.addWidget(titulo)
-        layout.addWidget(self.username_input)
-        layout.addWidget(self.password_input)
-        layout.addWidget(btn_login)
+
+        title = QLabel("Iniciar sesión")
+        title.setFont(QFont("Segoe UI", 14, QFont.Weight.DemiBold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        self.input_user = QLineEdit()
+        self.input_user.setPlaceholderText("Usuario")
+        layout.addWidget(self.input_user)
+
+        self.input_pass = QLineEdit()
+        self.input_pass.setPlaceholderText("Contraseña")
+        self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
+        layout.addWidget(self.input_pass)
+
+        self.btn_login = QPushButton("Ingresar")
+        self.btn_login.clicked.connect(self.login)
+        layout.addWidget(self.btn_login)
+
         self.setLayout(layout)
 
-    def verificar_login(self):
-        usuario = self.username_input.text()
-        contrasena = self.password_input.text()
-        exito, datos = self.auth_service.login(usuario, contrasena)
+    def login(self):
+        username = self.input_user.text()
+        password = self.input_pass.text()
+        exito, usuario = self.auth_service.login(username, password)
         if exito:
-            QMessageBox.information(self, "Acceso correcto", f"Bienvenido, {usuario}")
             self.hide()
             self.dashboard = Dashboard(self.cliente_service, self.pedido_service)
             self.dashboard.show()
         else:
             QMessageBox.warning(self, "Error", "Usuario o contraseña incorrectos")
 
-
-# ==============================
-# Ventana Principal (Dashboard)
-# ==============================
 class Dashboard(QWidget):
     def __init__(self, cliente_service, pedido_service):
         super().__init__()
         self.cliente_service = cliente_service
         self.pedido_service = pedido_service
-        self.init_ui()
 
-    def init_ui(self):
-        self.setWindowTitle("SoftGraph - Panel Principal")
-        self.setGeometry(300, 150, 700, 500)
+        self.setWindowTitle("SoftGraph - Dashboard")
+        self.setFixedSize(600, 400)
+        layout = QVBoxLayout()
 
-        titulo = QLabel("Dashboard SoftGraph")
-        titulo.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
-        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title = QLabel("Dashboard SoftGraph")
+        title.setFont(QFont("Segoe UI", 16, QFont.Weight.DemiBold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
 
-        btn_clientes = QPushButton("Listar Clientes")
-        btn_clientes.clicked.connect(self.mostrar_clientes)
+        # Botones
+        btn_layout = QHBoxLayout()
 
-        btn_pedidos = QPushButton("Listar Pedidos")
-        btn_pedidos.clicked.connect(self.mostrar_pedidos)
+        self.btn_list_clients = QPushButton("Listar Clientes")
+        self.btn_list_clients.clicked.connect(self.listar_clientes)
+        btn_layout.addWidget(self.btn_list_clients)
 
-        btn_salir = QPushButton("Cerrar")
-        btn_salir.clicked.connect(self.close)
+        self.btn_add_client = QPushButton("Agregar Cliente")
+        self.btn_add_client.clicked.connect(self.agregar_cliente)
+        btn_layout.addWidget(self.btn_add_client)
 
-        self.tabla = QTableWidget()
-        self.tabla.setColumnCount(4)
-        self.tabla.setHorizontalHeaderLabels(["ID", "Nombre", "Dato 1", "Dato 2"])
+        layout.addLayout(btn_layout)
 
-        layout_botones = QHBoxLayout()
-        layout_botones.addWidget(btn_clientes)
-        layout_botones.addWidget(btn_pedidos)
-        layout_botones.addWidget(btn_salir)
+        self.table = QTableWidget()
+        layout.addWidget(self.table)
 
-        layout_principal = QVBoxLayout()
-        layout_principal.addWidget(titulo)
-        layout_principal.addLayout(layout_botones)
-        layout_principal.addWidget(self.tabla)
-        self.setLayout(layout_principal)
+        self.setLayout(layout)
 
-    def mostrar_clientes(self):
+    def listar_clientes(self):
         clientes = self.cliente_service.listar_clientes()
-        self.tabla.setRowCount(len(clientes))
-        self.tabla.setHorizontalHeaderLabels(["ID", "Nombre", "DNI", "Email"])
-        for i, c in enumerate(clientes):
-            self.tabla.setItem(i, 0, QTableWidgetItem(str(c.id)))
-            self.tabla.setItem(i, 1, QTableWidgetItem(c.nombre))
-            self.tabla.setItem(i, 2, QTableWidgetItem(c.dni))
-            self.tabla.setItem(i, 3, QTableWidgetItem(c.email))
+        self.table.clear()
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["Nombre", "DNI", "Email"])
+        self.table.setRowCount(len(clientes))
+        for row, c in enumerate(clientes):
+            self.table.setItem(row, 0, QTableWidgetItem(c.nombre))
+            self.table.setItem(row, 1, QTableWidgetItem(c.dni))
+            self.table.setItem(row, 2, QTableWidgetItem(c.email if c.email else ""))
 
-    def mostrar_pedidos(self):
-        pedidos = self.pedido_service.listar_pedidos()
-        self.tabla.setRowCount(len(pedidos))
-        self.tabla.setHorizontalHeaderLabels(["ID", "Cliente ID", "Descripción", "Total"])
-        for i, p in enumerate(pedidos):
-            self.tabla.setItem(i, 0, QTableWidgetItem(str(p.id)))
-            self.tabla.setItem(i, 1, QTableWidgetItem(str(p.cliente_id)))
-            self.tabla.setItem(i, 2, QTableWidgetItem(p.descripcion))
-            self.tabla.setItem(i, 3, QTableWidgetItem(f"${p.cantidad * p.precio_unitario:.2f}"))
+    def agregar_cliente(self):
+        from PyQt6.QtWidgets import QInputDialog
+        nombre, ok1 = QInputDialog.getText(self, "Agregar Cliente", "Nombre:")
+        if not ok1 or not nombre:
+            return
+        dni, ok2 = QInputDialog.getText(self, "Agregar Cliente", "DNI:")
+        if not ok2 or not dni:
+            return
+        email, ok3 = QInputDialog.getText(self, "Agregar Cliente", "Email:")
+        if not ok3:
+            email = None
+
+        if self.cliente_service.agregar_cliente(nombre, dni, email):
+            QMessageBox.information(self, "Éxito", "Cliente agregado correctamente")
+            self.listar_clientes()
+        else:
+            QMessageBox.warning(self, "Error", "No se pudo agregar el cliente o ya existe")

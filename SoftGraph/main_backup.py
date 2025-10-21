@@ -5,6 +5,7 @@ from services.cliente_service import ClienteService
 from services.pedido_service import PedidoService
 from services.presupuesto_service import PresupuestoService
 from services.auth_service import AuthService
+from dao.dao import ClienteDAO, PedidoDAO, PresupuestoDAO
 from dotenv import load_dotenv
 import os
 
@@ -21,11 +22,17 @@ def main():
     )
     db.conectar()
 
+    # Inicializar DAOs
+    cliente_dao = ClienteDAO(db)
+    pedido_dao = PedidoDAO(db)
+    presupuesto_dao = PresupuestoDAO(db)
+
     # Inicializar servicios
     auth_service = AuthService(db)
     cliente_service = ClienteService(db)
     pedido_service = PedidoService(db)
-    presupuesto_service = PresupuestoService()
+    presupuesto_service = PresupuestoService(db, presupuesto_dao)
+
 
     # --- LOGIN ---
     print("=== Bienvenido a SoftGraph ===")
@@ -113,7 +120,6 @@ def main():
                 continue
             descuento = float(input("Porcentaje de descuento: "))
             presupuesto_service.generar_presupuesto(pedidos, descuento)
-
         else:
             print("Opción inválida. Intente nuevamente.")
 
