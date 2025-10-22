@@ -6,7 +6,17 @@
 
 ## 📌 Descripción
 
-**SoftGraph** es un sistema en **Python** para la gestión de clientes, pedidos y presupuestos en imprentas.  
+**SoftGraph** es un sistema en **Python** para la gestión de clientes, pedidos y presupuestos en imprentas.
+Forma parte del Proyecto ABP del ISPC de la materia Elementos de Matemática y Lógica.  
+
+Carátula: 
+[PDF]https://drive.google.com/file/d/1kGaC_PEkCRD5rPItyMu20uWG26Sx1t7M/view?usp=sharing
+
+Estructura ABP:
+[PDF]https://drive.google.com/file/d/1LXbpDhooGl1qMrPr1SiucrE_G6GNr0lu/view?usp=sharing
+
+
+
 Funciona actualmente en **consola**, pero está diseñado para evolucionar a una interfaz gráfica.
 
 ✅ Funcionalidades:
