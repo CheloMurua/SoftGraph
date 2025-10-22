@@ -42,6 +42,7 @@ softgraph/
 │
 ├── main.py
 ├── requirements.txt
+├── dashboard_gui.py
 │
 ├── database/
 │   └── database.py
