@@ -1,160 +1,382 @@
-# dashboard_gui.py
-import sys, os
+# dashboard_gui_moderno.py
+import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QTableWidget, QTableWidgetItem, QMessageBox, QStackedWidget, QFormLayout,
-    QDialog, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QFrame
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
+    QLineEdit, QMessageBox, QTableWidget, QTableWidgetItem, QInputDialog, QSizePolicy
 )
-from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
-from decimal import Decimal
-from dotenv import load_dotenv
-
-# Importar tus servicios y DAOs
+from PyQt5.QtGui import QFont, QIcon
 from database.database import Database
-from services.auth_service import AuthService
 from services.cliente_service import ClienteService
 from services.pedido_service import PedidoService
 from services.presupuesto_service import PresupuestoService
+from services.auth_service import AuthService
 from dao.dao import ClienteDAO, PedidoDAO, PresupuestoDAO
+from dotenv import load_dotenv
+import os
 
-load_dotenv()
-
-# ----------------- Estilos modernos -----------------
+# --- Estilo moderno tipo Material / Bootstrap ---
 APP_STYLE = """
-QWidget {background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #e0f0ff, stop:1 #ffffff); font-family: "Segoe UI";}
-QFrame#card {background: #ffffff; border-radius: 10px; padding: 12px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);}
-QPushButton.primary {background-color:#2b6baf; color:#fff; border-radius:8px; padding:8px 12px; font-weight:600;}
-QPushButton.ghost {background:transparent; border:1px solid rgba(43,107,175,0.6); border-radius:8px; padding:6px 10px; color:#2b6baf;}
-QTableWidget {background:#f5faff; gridline-color:#d0e4ff;}
-QHeaderView::section {background:#2b6baf; color:#fff; font-weight:600; padding:6px;}
-QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {background:#f0f8ff; border:1px solid #d0e4ff; border-radius:6px; padding:6px;}
-QLabel {color:#2b6baf;}
+QWidget {
+    background-color: #f5f6fa;
+    color: #2f3640;
+    font-family: "Segoe UI", Arial;
+    font-size: 13px;
+}
+#sidebar {
+    background-color: #2f3640;
+    color: #f5f6fa;
+}
+QPushButton#sideBtn {
+    background: transparent;
+    color: #f5f6fa;
+    border: none;
+    padding: 12px 20px;
+    text-align: left;
+}
+QPushButton#sideBtn:hover {
+    background-color: #57606f;
+    color: #fff;
+}
+QPushButton#sideBtn:checked {
+    background-color: #00a8ff;
+    color: #fff;
+    font-weight: bold;
+}
+QFrame#card {
+    background-color: #dcdde1;
+    border-radius: 10px;
+    padding: 15px;
+}
+QTableWidget {
+    background-color: #ffffff;
+    gridline-color: #dcdde1;
+    border: 1px solid #dcdde1;
+}
+QPushButton#actionBtn {
+    background-color: #00a8ff;
+    color: #fff;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-weight: bold;
+}
+QPushButton#actionBtn:hover {
+    background-color: #0097e6;
+}
+QLabel#titleCard {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 """
 
-# ----------------- Dashboard -----------------
 class SoftGraphDashboard(QWidget):
-    def __init__(self, db, auth_service, cliente_service, pedido_service, presupuesto_service):
+    def __init__(self):
         super().__init__()
-        self.db = db
-        self.auth_service = auth_service
-        self.cliente_service = cliente_service
-        self.pedido_service = pedido_service
-        self.presupuesto_service = presupuesto_service
-
-        self.setWindowTitle("SoftGraph — Dashboard")
+        self.setWindowTitle("SoftGraph — Dashboard Moderno")
         self.resize(1200, 700)
         self.setStyleSheet(APP_STYLE)
 
-        self._build_ui()
-        self._refresh_summary()
+        # Inicialización de servicios
+        self.db = None
+        self.auth_service = None
+        self.cliente_service = None
+        self.pedido_service = None
+        self.presupuesto_service = None
 
-    # ----------------- UI -----------------
+        self._build_ui()
+        self.show_login()
+
+    # --- Construcción UI ---
     def _build_ui(self):
-        main_layout = QHBoxLayout(self)
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
 
         # Sidebar
-        sidebar = QFrame(); sidebar.setFixedWidth(220)
-        v_sidebar = QVBoxLayout(sidebar)
-        logo = QLabel("SoftGraph"); logo.setFont(QFont("Segoe UI",18,QFont.Bold)); v_sidebar.addWidget(logo); v_sidebar.addSpacing(12)
+        self.sidebar = QFrame()
+        self.sidebar.setObjectName("sidebar")
+        self.sidebar.setFixedWidth(250)
+        self.sidebar_layout = QVBoxLayout()
+        self.sidebar.setLayout(self.sidebar_layout)
 
-        self.btn_dashboard = QPushButton("Dashboard"); self.btn_dashboard.setCheckable(True); self.btn_dashboard.setChecked(True)
-        self.btn_clients = QPushButton("Clientes"); self.btn_clients.setCheckable(True)
-        self.btn_orders = QPushButton("Pedidos"); self.btn_orders.setCheckable(True)
-        self.btn_quotes = QPushButton("Presupuestos"); self.btn_quotes.setCheckable(True)
-        for b in [self.btn_dashboard,self.btn_clients,self.btn_orders,self.btn_quotes]: b.setObjectName("sideBtn")
-        v_sidebar.addWidget(self.btn_dashboard); v_sidebar.addWidget(self.btn_clients)
-        v_sidebar.addWidget(self.btn_orders); v_sidebar.addWidget(self.btn_quotes); v_sidebar.addStretch()
-        logout_btn = QPushButton("Cerrar sesión"); logout_btn.clicked.connect(self.logout); v_sidebar.addWidget(logout_btn)
+        self.logo = QLabel("SoftGraph")
+        self.logo.setFont(QFont("Segoe UI", 24, QFont.Bold))
+        self.logo.setAlignment(Qt.AlignCenter)
+        self.sidebar_layout.addWidget(self.logo)
+        self.sidebar_layout.addSpacing(40)
 
-        # Stacked pages
-        self.stack = QStackedWidget()
-        main_layout.addWidget(sidebar)
-        main_layout.addWidget(self.stack,stretch=1)
+        # Botones sidebar con iconos
+        self.btn_dashboard = QPushButton("🏠 Dashboard")
+        self.btn_dashboard.setCheckable(True)
+        self.btn_dashboard.setObjectName("sideBtn")
+        self.btn_dashboard.setChecked(True)
+        self.btn_dashboard.clicked.connect(self.show_dashboard)
 
-        # Crear páginas
-        self.page_dashboard = self._make_dashboard_page()
-        self.page_clients = self._make_clients_page()
-        self.page_orders = self._make_orders_page()
-        self.page_quotes = self._make_quotes_page()
+        self.btn_clients = QPushButton("👥 Clientes")
+        self.btn_clients.setCheckable(True)
+        self.btn_clients.setObjectName("sideBtn")
+        self.btn_clients.clicked.connect(self.show_clientes)
 
-        self.stack.addWidget(self.page_dashboard)
-        self.stack.addWidget(self.page_clients)
-        self.stack.addWidget(self.page_orders)
-        self.stack.addWidget(self.page_quotes)
+        self.btn_pedidos = QPushButton("🛒 Pedidos")
+        self.btn_pedidos.setCheckable(True)
+        self.btn_pedidos.setObjectName("sideBtn")
+        self.btn_pedidos.clicked.connect(self.show_pedidos)
 
-        # Conectar botones
-        self.btn_dashboard.clicked.connect(lambda: self._switch(0))
-        self.btn_clients.clicked.connect(lambda: self._switch(1))
-        self.btn_orders.clicked.connect(lambda: self._switch(2))
-        self.btn_quotes.clicked.connect(lambda: self._switch(3))
+        self.btn_presupuesto = QPushButton("💰 Presupuestos")
+        self.btn_presupuesto.setCheckable(True)
+        self.btn_presupuesto.setObjectName("sideBtn")
+        self.btn_presupuesto.clicked.connect(self.show_presupuestos)
 
-    # ----------------- Dashboard page -----------------
-    def _make_dashboard_page(self):
-        page = QFrame(); page.setObjectName("card")
-        layout = QVBoxLayout(page)
-        title = QLabel("Resumen")
-        title.setFont(QFont("Segoe UI",18,QFont.Bold))
-        layout.addWidget(title)
+        self.sidebar_layout.addWidget(self.btn_dashboard)
+        self.sidebar_layout.addWidget(self.btn_clients)
+        self.sidebar_layout.addWidget(self.btn_pedidos)
+        self.sidebar_layout.addWidget(self.btn_presupuesto)
+        self.sidebar_layout.addStretch()
 
-        # Cards
-        cards_layout = QHBoxLayout()
-        self.lbl_total_clients = self._stat_card("Clientes","0")
-        self.lbl_total_orders = self._stat_card("Pedidos","0")
-        self.lbl_total_quotes = self._stat_card("Presupuestos","0")
-        cards_layout.addWidget(self.lbl_total_clients); cards_layout.addWidget(self.lbl_total_orders); cards_layout.addWidget(self.lbl_total_quotes)
-        layout.addLayout(cards_layout)
+        # Main Area
+        self.main_area = QFrame()
+        self.main_layout = QVBoxLayout()
+        self.main_area.setLayout(self.main_layout)
+        self.layout.addWidget(self.sidebar)
+        self.layout.addWidget(self.main_area)
 
-        btn_refresh = QPushButton("Actualizar resumen"); btn_refresh.setProperty("class","ghost"); btn_refresh.clicked.connect(self._refresh_summary)
-        layout.addWidget(btn_refresh,alignment=Qt.AlignLeft)
-        return page
+    # --- LOGIN ---
+    def show_login(self):
+        self.clear_main()
+        login_widget = QFrame()
+        layout = QVBoxLayout()
+        login_widget.setLayout(layout)
+        login_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-    def _stat_card(self,title,value):
-        card = QFrame(); card.setObjectName("card"); v = QVBoxLayout(card)
-        t = QLabel(title); t.setFont(QFont("Segoe UI",12,QFont.Bold))
-        val = QLabel(value); val.setFont(QFont("Segoe UI",20,QFont.Bold))
-        v.addWidget(t); v.addWidget(val); card.value_label = val
+        lbl_title = QLabel("Iniciar Sesión")
+        lbl_title.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        lbl_title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_title)
+
+        layout.addSpacing(20)
+        layout.addWidget(QLabel("Usuario:"))
+        self.input_user = QLineEdit()
+        layout.addWidget(self.input_user)
+
+        layout.addWidget(QLabel("Contraseña:"))
+        self.input_pass = QLineEdit()
+        self.input_pass.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.input_pass)
+
+        btn_login = QPushButton("Entrar")
+        btn_login.setObjectName("actionBtn")
+        btn_login.clicked.connect(self.attempt_login)
+        layout.addWidget(btn_login)
+        layout.addStretch()
+
+        self.main_layout.addWidget(login_widget)
+
+    def attempt_login(self):
+        username = self.input_user.text()
+        password = self.input_pass.text()
+        try:
+            load_dotenv()
+            self.db = Database(
+                host=os.getenv("DB_HOST"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                database=os.getenv("DB_NAME")
+            )
+            self.db.conectar()
+        except Exception as e:
+            QMessageBox.critical(self, "Error DB", str(e))
+            return
+
+        try:
+            self.auth_service = AuthService(self.db)
+            exito, usuario = self.auth_service.login(username, password)
+            if not exito:
+                QMessageBox.warning(self, "Login fallido", "Usuario o contraseña incorrectos")
+                return
+
+            # Inicializar servicios
+            self.cliente_service = ClienteService(self.db)
+            self.pedido_service = PedidoService(self.db)
+            self.presupuesto_service = PresupuestoService(self.db, PresupuestoDAO(self.db))
+
+            QMessageBox.information(self, "Login correcto", f"¡Bienvenido {usuario['username']}!")
+            self.show_dashboard()
+        except Exception as e:
+            QMessageBox.critical(self, "Error Servicios", str(e))
+
+    # --- Funciones generales ---
+    def clear_main(self):
+        for i in reversed(range(self.main_layout.count())):
+            widget = self.main_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+
+    def _create_card(self, title, widgets):
+        card = QFrame()
+        card.setObjectName("card")
+        layout = QVBoxLayout()
+        card.setLayout(layout)
+        lbl_title = QLabel(title)
+        lbl_title.setObjectName("titleCard")
+        layout.addWidget(lbl_title)
+        for w in widgets:
+            layout.addWidget(w)
         return card
 
-    def _refresh_summary(self):
+    # --- DASHBOARD ---
+    def show_dashboard(self):
+        self.clear_main()
+        widgets = [
+            QLabel("Bienvenido a SoftGraph Moderno!"),
+            QLabel("Navega por Clientes, Pedidos y Presupuestos usando el sidebar."),
+        ]
+        card = self._create_card("Dashboard", widgets)
+        self.main_layout.addWidget(card)
+
+    # --- CLIENTES ---
+    def show_clientes(self):
+        self.clear_main()
+        if not self.cliente_service:
+            QMessageBox.warning(self, "Error", "Debes iniciar sesión primero")
+            return
         try:
-            clients = self.cliente_service.listar_clientes() or []
-            orders = self.pedido_service.listar_pedidos() or []
-            quotes = self.presupuesto_service.presupuesto_dao.listar_presupuestos() or []
-            self.lbl_total_clients.value_label.setText(str(len(clients)))
-            self.lbl_total_orders.value_label.setText(str(len(orders)))
-            self.lbl_total_quotes.value_label.setText(str(len(quotes)))
+            clientes = self.cliente_service.listar_clientes()
+            table = QTableWidget()
+            table.setColumnCount(3)
+            table.setHorizontalHeaderLabels(["Nombre", "DNI", "Email"])
+            table.setRowCount(len(clientes))
+            for i, c in enumerate(clientes):
+                table.setItem(i, 0, QTableWidgetItem(c.nombre))
+                table.setItem(i, 1, QTableWidgetItem(c.dni))
+                table.setItem(i, 2, QTableWidgetItem(c.email or ""))
+
+            btn_add = QPushButton("Agregar Cliente")
+            btn_add.setObjectName("actionBtn")
+            btn_add.clicked.connect(self.add_cliente)
+            btn_del = QPushButton("Eliminar Cliente")
+            btn_del.setObjectName("actionBtn")
+            btn_del.clicked.connect(self.del_cliente)
+
+            card = self._create_card("Clientes", [table, btn_add, btn_del])
+            self.main_layout.addWidget(card)
         except Exception as e:
-            print("Error al refrescar resumen:", e)
+            QMessageBox.critical(self, "Error Clientes", str(e))
 
-    # ----------------- Pages helpers -----------------
-    def _switch(self,index):
-        self.stack.setCurrentIndex(index)
-        for i,b in enumerate([self.btn_dashboard,self.btn_clients,self.btn_orders,self.btn_quotes]):
-            b.setChecked(i==index)
+    def add_cliente(self):
+        try:
+            nombre, ok1 = QInputDialog.getText(self, "Agregar Cliente", "Nombre:")
+            if not ok1 or not nombre: return
+            dni, ok2 = QInputDialog.getText(self, "Agregar Cliente", "DNI:")
+            if not ok2 or not dni: return
+            email, ok3 = QInputDialog.getText(self, "Agregar Cliente", "Email (opcional):")
+            if not self.cliente_service.agregar_cliente(nombre, dni, email):
+                QMessageBox.warning(self, "Error", "Cliente ya existe")
+            else:
+                QMessageBox.information(self, "Éxito", "Cliente agregado")
+                self.show_clientes()
+        except Exception as e:
+            QMessageBox.critical(self, "Error Agregar Cliente", str(e))
 
-    def logout(self):
-        confirm = QMessageBox.question(self,"Cerrar sesión","¿Cerrar sesión y salir?",QMessageBox.Yes|QMessageBox.No)
-        if confirm == QMessageBox.Yes:
-            try: self.db.desconectar()
-            except: pass
-            QApplication.quit()
+    def del_cliente(self):
+        try:
+            dni, ok = QInputDialog.getText(self, "Eliminar Cliente", "DNI del cliente:")
+            if not ok or not dni: return
+            cliente = self.cliente_service.cliente_dao.buscar_cliente_por_dni(dni)
+            if not cliente:
+                QMessageBox.warning(self, "Error", "Cliente no encontrado")
+                return
+            confirm = QMessageBox.question(self, "Confirmar", f"Eliminar {cliente.nombre}?",
+                                           QMessageBox.Yes | QMessageBox.No)
+            if confirm == QMessageBox.Yes:
+                self.cliente_service.cliente_dao.eliminar_cliente(cliente.id)
+                QMessageBox.information(self, "Éxito", "Cliente eliminado")
+                self.show_clientes()
+        except Exception as e:
+            QMessageBox.critical(self, "Error Eliminar Cliente", str(e))
 
-# ----------------- Main -----------------
-def main():
-    db = Database(host=os.getenv("DB_HOST"),user=os.getenv("DB_USER"),
-                  password=os.getenv("DB_PASSWORD"),database=os.getenv("DB_NAME"))
-    db.conectar()
+    # --- PEDIDOS ---
+    def show_pedidos(self):
+        self.clear_main()
+        if not self.pedido_service:
+            QMessageBox.warning(self, "Error", "Debes iniciar sesión primero")
+            return
+        try:
+            pedidos = self.pedido_service.listar_pedidos()
+            table = QTableWidget()
+            table.setColumnCount(5)
+            table.setHorizontalHeaderLabels(["Cliente ID", "Descripción", "Cantidad", "Precio Unit.", "Fecha"])
+            table.setRowCount(len(pedidos))
+            for i, p in enumerate(pedidos):
+                table.setItem(i, 0, QTableWidgetItem(str(p.cliente_id)))
+                table.setItem(i, 1, QTableWidgetItem(p.descripcion))
+                table.setItem(i, 2, QTableWidgetItem(str(p.cantidad)))
+                table.setItem(i, 3, QTableWidgetItem(str(p.precio_unitario)))
+                table.setItem(i, 4, QTableWidgetItem(str(p.fecha)))
 
-    auth_service = AuthService(db)
-    cliente_service = ClienteService(db)
-    pedido_service = PedidoService(db)
-    presupuesto_service = PresupuestoService(db,PresupuestoDAO(db))
+            btn_add = QPushButton("Agregar Pedido")
+            btn_add.setObjectName("actionBtn")
+            btn_add.clicked.connect(self.add_pedido)
+            btn_del = QPushButton("Eliminar Pedido")
+            btn_del.setObjectName("actionBtn")
+            btn_del.clicked.connect(self.del_pedido)
 
+            card = self._create_card("Pedidos", [table, btn_add, btn_del])
+            self.main_layout.addWidget(card)
+        except Exception as e:
+            QMessageBox.critical(self, "Error Pedidos", str(e))
+
+    def add_pedido(self):
+        try:
+            dni, ok1 = QInputDialog.getText(self, "Agregar Pedido", "DNI del cliente:")
+            if not ok1 or not dni: return
+            cliente = self.cliente_service.cliente_dao.buscar_cliente_por_dni(dni)
+            if not cliente:
+                QMessageBox.warning(self, "Error", "Cliente no encontrado")
+                return
+            descripcion, ok2 = QInputDialog.getText(self, "Agregar Pedido", "Descripción:")
+            if not ok2 or not descripcion: return
+            cantidad, ok3 = QInputDialog.getInt(self, "Agregar Pedido", "Cantidad:", 1, 1)
+            if not ok3: return
+            precio, ok4 = QInputDialog.getDouble(self, "Agregar Pedido", "Precio Unitario:", 0.0, 0.0)
+            if not ok4: return
+            self.pedido_service.agregar_pedido(cliente.id, descripcion, cantidad, precio)
+            QMessageBox.information(self, "Éxito", "Pedido agregado")
+            self.show_pedidos()
+        except Exception as e:
+            QMessageBox.critical(self, "Error Agregar Pedido", str(e))
+
+    def del_pedido(self):
+        try:
+            pid, ok = QInputDialog.getInt(self, "Eliminar Pedido", "ID del pedido:")
+            if not ok: return
+            self.pedido_service.pedido_dao.eliminar_pedido(pid)
+            QMessageBox.information(self, "Éxito", "Pedido eliminado si existía")
+            self.show_pedidos()
+        except Exception as e:
+            QMessageBox.critical(self, "Error Eliminar Pedido", str(e))
+
+    # --- PRESUPUESTOS ---
+    def show_presupuestos(self):
+        self.clear_main()
+        if not self.presupuesto_service or not self.pedido_service:
+            QMessageBox.warning(self, "Error", "Debes iniciar sesión primero")
+            return
+        try:
+            pedidos = self.pedido_service.listar_pedidos()
+            descuento, ok = QInputDialog.getDouble(self, "Generar Presupuesto",
+                                                   "Porcentaje de descuento:", 0.0, 0, 100, 2)
+            if not ok: return
+            self.presupuesto_service.generar_presupuesto(pedidos, descuento)
+            card = self._create_card("Presupuestos", [QLabel(f"Presupuesto generado con {len(pedidos)} pedidos y {descuento}% de descuento")])
+            self.main_layout.addWidget(card)
+        except Exception as e:
+            QMessageBox.critical(self, "Error Presupuestos", str(e))
+
+
+# --- Ejecutar ---
+if __name__ == "__main__":
+    print(">>> Dashboard Moderno iniciado correctamente")
     app = QApplication(sys.argv)
-    window = SoftGraphDashboard(db, auth_service, cliente_service, pedido_service, presupuesto_service)
+    window = SoftGraphDashboard()
     window.show()
     sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()

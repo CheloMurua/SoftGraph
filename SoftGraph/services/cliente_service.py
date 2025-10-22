@@ -2,7 +2,7 @@
 Service de Cliente: maneja la lógica de negocio sobre clientes.
 Valida duplicados y aplica reglas antes de llamar al DAO.
 """
-
+print("Dashboard GUI iniciado correctamente")
 from dao.dao import ClienteDAO
 from models.cliente import Cliente
 
