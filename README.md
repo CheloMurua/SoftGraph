@@ -85,133 +85,89 @@ Este documento describe cómo se aplican los conceptos de **Análisis Matemátic
 
 ---
 
-## 2️⃣ Análisis Matemático – Funciones y Proporcionalidad
+🧮 2. Análisis Matemático – Funciones y Proporcionalidad
 
-### 📍 Dónde se aplica
-- En `pedido.py` → `calcular_total()`:
-  ```python
-  def calcular_total(self):
-      return self.cantidad * self.precio_unitario
-Se define una función matemática lineal entre las variables:
+“En la parte del cálculo de pedidos y presupuestos se aplican funciones matemáticas y proporcionalidad directa e inversa.”
 
-𝑡𝑜𝑡𝑎𝑙=𝑐𝑎𝑛𝑡𝑖𝑑𝑎𝑑×𝑝𝑟𝑒𝑐𝑖𝑜_𝑢𝑛𝑖𝑡𝑎𝑟𝑖𝑜
-total=cantidad×precio_unitario
-Es una relación de proporcionalidad directa, ya que si se duplica la cantidad, el total también se duplica.
+💻 Ejemplo en el código:
+def calcular_total(self):
+    return self.cantidad * self.precio_unitario
 
-En presupuesto.py → calcular_total():
 
-python
-Copiar código
-total = sum(p.calcular_total() for p in self.pedidos)
-total_con_descuento = total * (1 - self.descuento/100)
-Aquí se aplican funciones compuestas (suma de subtotales y porcentaje de descuento).
-Además, existe proporcionalidad inversa: a mayor descuento, menor total final.
+📊 “Esta es una función lineal donde el total es directamente proporcional a la cantidad.
+Si duplicamos la cantidad, el total también se duplica.”
 
-🧠 Conceptos aplicados
-Funciones lineales: 
-𝑓(𝑥)=𝑘𝑥f(x)=kx
+✏️ “En el caso del presupuesto, se aplica una función compuesta que incluye un descuento,
+por ejemplo: total_final = total × (1 - descuento / 100).
+Ahí aparece una proporcionalidad inversa: si aumento el descuento, el total final disminuye.”
 
-Funciones de porcentaje: 
-𝑓(𝑥)=𝑥(1−𝑑/100)
-f(x)=x(1−d/100)
+🔎 Conclusión:
+“Estas funciones reflejan relaciones matemáticas reales dentro del modelo de negocio.”
 
-Proporcionalidad directa e inversa.
+🔢 3. Técnicas de Conteo y Lógica
 
-3️⃣ Técnicas de Conteo y Lógica
-📍 Dónde se aplica
-En los DAOs (ClienteDAO, PedidoDAO, PresupuestoDAO) al listar o contar registros:
+🗣️ “Otro punto clave fue la aplicación de la lógica proposicional y las técnicas de conteo.”
 
-python
-Copiar código
-resultados = self.db.ejecutar_query("SELECT * FROM clientes")
-return [Cliente(... ) for r in resultados]
-Se realiza un conteo iterativo de registros, similar al principio de multiplicación de la combinatoria.
-
-En las condiciones lógicas:
-
-python
-Copiar código
+💻 Ejemplo:
 if resultado:
     return True, resultado[0]
 return False, None
-Se aplican operadores lógicos y condicionales, propios de la lógica proposicional:
 
-Si la proposición “usuario existe” es verdadera, se ejecuta una acción.
+🧠 “Acá se aplica una condición lógica: si el usuario existe, la proposición es verdadera y se permite el acceso; si no, es falsa y se deniega. Es un ejemplo directo de lógica booleana.”
 
-Caso contrario, retorna falso.
+📈 “También se aplican técnicas de conteo en las funciones que listan o recorren registros, como al mostrar todos los clientes o los pedidos de un usuario.”
 
-🧠 Conceptos aplicados
-Conteo de elementos en conjuntos.
+🔎 Conclusión:
+“La lógica y el conteo son esenciales para el control de flujo y la organización de los datos.”
 
-Lógica proposicional (condiciones verdaderas o falsas).
+🧩 4. Álgebra y Estructuras Discretas
 
-Relaciones entre entidades (clientes → pedidos → presupuestos).
+“En el diseño del sistema se usaron estructuras discretas y relaciones algebraicas entre conjuntos de datos.”
 
-4️⃣ Álgebra y Estructuras Discretas
-📍 Dónde se aplica
-En la relación entre clases y objetos:
-Las clases Cliente, Pedido y Presupuesto representan estructuras discretas, con relaciones definidas entre sí.
+📘 “Por ejemplo, un cliente puede tener muchos pedidos y cada pedido pertenece a un solo cliente.
+Esto representa una relación uno a muchos, que podemos interpretar como un conjunto de pares ordenados dentro de la matemática discreta.”
 
-Ejemplo:
+📂 “Además, las tablas de la base de datos funcionan como conjuntos finitos con operaciones definidas —insertar, eliminar, modificar— que son equivalentes a operaciones algebraicas en un sistema cerrado.”
 
-Un cliente puede tener varios pedidos → relación uno a muchos.
+🔎 Conclusión:
+“Las estructuras discretas permiten mantener coherencia y orden en los datos.”
 
-Cada pedido pertenece a un solo cliente → relación muchos a uno.
+🔁 5. Sucesiones y Sistemas de Numeración
 
-En la base de datos relacional (database.py, dao.py):
-Las tablas y sus claves representan conjuntos finitos con operaciones definidas (insertar, eliminar, listar), como en un sistema algebraico cerrado.
+“Otro concepto presente son las sucesiones y los sistemas de numeración.”
 
-🧠 Conceptos aplicados
-Conjuntos y relaciones (R ⊆ A×B).
+💻 Ejemplo:
 
-Estructuras discretas (tablas, objetos, relaciones).
-
-Operaciones algebraicas (inserción = suma, eliminación = resta).
-
-5️⃣ Sucesiones y Sistemas de Numeración
-📍 Dónde se aplica
-En los IDs autoincrementales:
-Cada nuevo registro en la base de datos genera una sucesión aritmética:
+IDs autoincrementales → Sucesión aritmética:
 
 an​=an−1​+1
+	​
 
-En los totales acumulados:
+Totales acumulados → Sumatoria:
 
-python
-Copiar código
-total = sum(p.calcular_total() for p in self.pedidos)
+Sn​=p1​+p2​+...+pn​
+	​
 
-Representa una sucesión finita de sumas parciales:
+📊 “Cada vez que se crea un nuevo cliente o pedido, el sistema genera un ID consecutivo, formando una sucesión aritmética.
+Y cuando calculamos el total de varios pedidos, estamos aplicando una sumatoria de términos.”
 
-Sn​=p1​+p2​+…+pn​​
- 
-En los precios y descuentos, que utilizan el sistema decimal (base 10) para representar valores monetarios y porcentuales.
+🔎 Conclusión:
+“Estas operaciones representan cómo los conceptos matemáticos se traducen en operaciones reales del software.”
 
-🧠 Conceptos aplicados
-Sucesiones aritméticas.
+🧠 6. Conclusión General
 
-Sumas de términos.
+En resumen, el proyecto SoftGraph integra múltiples conceptos de matemática y lógica de forma práctica.
 
-Sistema decimal aplicado a precios e identificadores.
+📌 Resumen breve:
 
-🧾 Resumen General
-Área Matemática	Dónde se Aplica	Concepto Principal
-Análisis Matemático	Pedido.calcular_total(), Presupuesto.calcular_total()	Funciones lineales, proporciones, porcentajes
-Técnicas de Conteo y Lógica	AuthService.login(), DAOs	Lógica proposicional, iteración, conteo de registros
-Álgebra y Estructuras Discretas	Clases y relaciones en DAO y DB	Conjuntos, relaciones, estructuras algebraicas
-Sucesiones y Sistemas de Numeración	IDs, sumatorias de totales	Sucesiones aritméticas, sistema decimal
+Funciones y proporcionalidad: Cálculos de totales y descuentos.
 
-💡 Conclusión
-El proyecto integra múltiples conceptos matemáticos dentro de su estructura de software:
+Lógica proposicional: Validaciones de usuarios y condiciones.
 
-Las funciones permiten modelar operaciones de precios y descuentos.
+Estructuras discretas: Clases, tablas y relaciones entre datos.
 
-La lógica se usa para validar condiciones y controlar el flujo del sistema.
+Sucesiones y conteo: IDs, registros y sumatorias.
 
-Las estructuras discretas organizan datos y relaciones entre entidades.
-
-Las sucesiones y sistemas numéricos aparecen en la gestión de identificadores, montos y fechas.
-
-Estos elementos combinados reflejan cómo la matemática aplicada es esencial para el diseño de sistemas coherentes, funcionales y escalables.
+🎯 Gracias a estos conceptos, el sistema no solo es funcional, sino también coherente, escalable y matemáticamente consistente.
 
     
