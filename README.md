@@ -154,10 +154,6 @@ Y cuando calculamos el total de varios pedidos, estamos aplicando una sumatoria 
 🔎 Conclusión:
 “Estas operaciones representan cómo los conceptos matemáticos se traducen en operaciones reales del software.”
 
-🧠 6. Conclusión General
-
-En resumen, el proyecto SoftGraph integra múltiples conceptos de matemática y lógica de forma práctica.
-
 📌 Resumen breve:
 
 Funciones y proporcionalidad: Cálculos de totales y descuentos.
