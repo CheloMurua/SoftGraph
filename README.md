@@ -94,36 +94,7 @@ Este documento describe cómo se aplican los conceptos de **Análisis Matemátic
       return self.cantidad * self.precio_unitario
 Se define una función matemática lineal entre las variables:
 
-𝑡
-𝑜
-𝑡
-𝑎
-𝑙
-=
-𝑐
-𝑎
-𝑛
-𝑡
-𝑖
-𝑑
-𝑎
-𝑑
-×
-𝑝
-𝑟
-𝑒
-𝑐
-𝑖
-𝑜
-_
-𝑢
-𝑛
-𝑖
-𝑡
-𝑎
-𝑟
-𝑖
-𝑜
+𝑡𝑜𝑡𝑎𝑙=𝑐𝑎𝑛𝑡𝑖𝑑𝑎𝑑×𝑝𝑟𝑒𝑐𝑖𝑜_𝑢𝑛𝑖𝑡𝑎𝑟𝑖𝑜
 total=cantidad×precio_unitario
 Es una relación de proporcionalidad directa, ya que si se duplica la cantidad, el total también se duplica.
 
@@ -138,29 +109,10 @@ Además, existe proporcionalidad inversa: a mayor descuento, menor total final.
 
 🧠 Conceptos aplicados
 Funciones lineales: 
-𝑓
-(
-𝑥
-)
-=
-𝑘
-𝑥
-f(x)=kx
+𝑓(𝑥)=𝑘𝑥f(x)=kx
 
 Funciones de porcentaje: 
-𝑓
-(
-𝑥
-)
-=
-𝑥
-(
-1
-−
-𝑑
-/
-100
-)
+𝑓(𝑥)=𝑥(1−𝑑/100)
 f(x)=x(1−d/100)
 
 Proporcionalidad directa e inversa.
@@ -221,54 +173,17 @@ Operaciones algebraicas (inserción = suma, eliminación = resta).
 En los IDs autoincrementales:
 Cada nuevo registro en la base de datos genera una sucesión aritmética:
 
-𝑎
-𝑛
-=
-𝑎
-𝑛
-−
-1
-+
-1
-a 
-n
-​
- =a 
-n−1
-​
- +1
+an​=an−1​+1
+
 En los totales acumulados:
 
 python
 Copiar código
 total = sum(p.calcular_total() for p in self.pedidos)
+
 Representa una sucesión finita de sumas parciales:
 
-𝑆
-𝑛
-=
-𝑝
-1
-+
-𝑝
-2
-+
-…
-+
-𝑝
-𝑛
-S 
-n
-​
- =p 
-1
-​
- +p 
-2
-​
- +…+p 
-n
-​
+Sn​=p1​+p2​+…+pn​​
  
 En los precios y descuentos, que utilizan el sistema decimal (base 10) para representar valores monetarios y porcentuales.
 
