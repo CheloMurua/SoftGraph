@@ -1,11 +1,11 @@
 # dashboard_gui_moderno.py
 import sys
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
     QLineEdit, QMessageBox, QTableWidget, QTableWidgetItem, QInputDialog, QSizePolicy
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QIcon
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont, QIcon
 from database.database import Database
 from services.cliente_service import ClienteService
 from services.pedido_service import PedidoService
@@ -100,8 +100,10 @@ class SoftGraphDashboard(QWidget):
         self.sidebar.setLayout(self.sidebar_layout)
 
         self.logo = QLabel("SoftGraph")
-        self.logo.setFont(QFont("Segoe UI", 24, QFont.Bold))
-        self.logo.setAlignment(Qt.AlignCenter)
+        font_logo = QFont("Segoe UI", 24)
+        font_logo.setBold(True)
+        self.logo.setFont(font_logo)
+        self.logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sidebar_layout.addWidget(self.logo)
         self.sidebar_layout.addSpacing(40)
 
@@ -146,11 +148,13 @@ class SoftGraphDashboard(QWidget):
         login_widget = QFrame()
         layout = QVBoxLayout()
         login_widget.setLayout(layout)
-        login_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        login_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         lbl_title = QLabel("Iniciar Sesión")
-        lbl_title.setFont(QFont("Segoe UI", 20, QFont.Bold))
-        lbl_title.setAlignment(Qt.AlignCenter)
+        font_title = QFont("Segoe UI", 20)
+        font_title.setBold(True)
+        lbl_title.setFont(font_title)
+        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
 
         layout.addSpacing(20)
@@ -160,7 +164,7 @@ class SoftGraphDashboard(QWidget):
 
         layout.addWidget(QLabel("Contraseña:"))
         self.input_pass = QLineEdit()
-        self.input_pass.setEchoMode(QLineEdit.Password)
+        self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
         layout.addWidget(self.input_pass)
 
         btn_login = QPushButton("Entrar")
@@ -286,8 +290,8 @@ class SoftGraphDashboard(QWidget):
                 QMessageBox.warning(self, "Error", "Cliente no encontrado")
                 return
             confirm = QMessageBox.question(self, "Confirmar", f"Eliminar {cliente.nombre}?",
-                                           QMessageBox.Yes | QMessageBox.No)
-            if confirm == QMessageBox.Yes:
+                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.Yes:
                 self.cliente_service.cliente_dao.eliminar_cliente(cliente.id)
                 QMessageBox.information(self, "Éxito", "Cliente eliminado")
                 self.show_clientes()
@@ -337,7 +341,7 @@ class SoftGraphDashboard(QWidget):
             if not ok2 or not descripcion: return
             cantidad, ok3 = QInputDialog.getInt(self, "Agregar Pedido", "Cantidad:", 1, 1)
             if not ok3: return
-            precio, ok4 = QInputDialog.getDouble(self, "Agregar Pedido", "Precio Unitario:", 0.0, 0.0)
+            precio, ok4 = QInputDialog.getDouble(self, "Agregar Pedido", "Precio Unitario:", 0.0, 0, 999999, 2)
             if not ok4: return
             self.pedido_service.agregar_pedido(cliente.id, descripcion, cantidad, precio)
             QMessageBox.information(self, "Éxito", "Pedido agregado")
@@ -379,4 +383,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = SoftGraphDashboard()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
