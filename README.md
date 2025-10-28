@@ -81,7 +81,7 @@ softgraph/
 
 # 🧮 Aplicación de Conceptos Matemáticos en el Proyecto
 
-Este documento describe cómo se aplican los conceptos de **Análisis Matemático** y **Matemática Discreta** dentro del código del proyecto, vinculando las operaciones lógicas, funciones, estructuras y relaciones que forman parte de su implementación.
+Este documento describe cómo se aplican los conceptos de Análisis Matemático y Matemática Discreta dentro del código del proyecto, vinculando las operaciones lógicas, funciones, estructuras y relaciones que forman parte de su implementación.
 
 ---
 
